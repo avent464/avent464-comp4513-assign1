@@ -28,7 +28,7 @@ app.get("/api/tables", (req, res) => {
 	db.all(sql, [], (err, rows) => {
 		if (err) {
 			return res.status(500).json({error: err.message});
-		}else{
+		} else {
 			res.json(rows);
 		}
 	});
@@ -50,7 +50,7 @@ app.get("/api/artists", (req, res) => {
 
 	`;
 	db.all(sql, [], (err, rows) => {
-		if(err) {
+		if (err) {
 			return res.status(500).json({error: err.message});
 		}
 		res.json(rows);
@@ -61,7 +61,7 @@ app.get("/api/artists", (req, res) => {
 app.get("/api/artists/averages/:ref", (req, res) => {
 	const ref = Number(req.params.ref);
 	
-	if(!Number.isInteger(ref)) {
+	if (!Number.isInteger(ref)) {
 		return res.status(404).json({error: "Artist averages not fount"});
 	}
 	
@@ -81,10 +81,10 @@ app.get("/api/artists/averages/:ref", (req, res) => {
 		WHERE artist_id = ?;
 	`;
 	db.get(sql, [ref], (err, row) => {
-		if(err) {
+		if (err) {
 			return res.status(500).json({error: err.message});
-		}else{
-			if(!row || row.popularity === null) {
+		} else {
+			if (!row || row.popularity === null) {
 				return res.status(404).json({error: "Artist averages not found"});
 			}
 			res.json(row);
@@ -96,7 +96,7 @@ app.get("/api/artists/averages/:ref", (req, res) => {
 app.get("/api/artists/:ref", (req, res) => {
 	const ref = Number(req.params.ref);
 
-	if(!Number.isInteger(ref)) {
+	if (!Number.isInteger(ref)) {
 		return res.status(404).json({error: "Artist not found"});
 	}
 
@@ -113,7 +113,7 @@ app.get("/api/artists/:ref", (req, res) => {
 		WHERE a.artist_id = ?;
 	`;
 	db.get(sql, [ref], (err, row) => {
-		if(err) {
+		if (err) {
 			return res.status(500).json({error: err.message});
 		}
 		res.json(row);
@@ -130,7 +130,7 @@ app.get("/api/genres", (req, res) => {
 		ORDER BY genre_name;
 	`;
 	db.all(sql, [], (err, rows) => {
-		if(err) {
+		if (err) {
 			return res.status(500).json({error: err.message});
 		}
 		res.json(rows);
@@ -138,23 +138,12 @@ app.get("/api/genres", (req, res) => {
 });
 
 /* ----- query #5 - returns data for songs sorted by title ----- */
-
 app.get("/api/songs", (req, res) => {
 	const sql = `
 		SELECT
-			s.song_id,
-			s.title,
-			s.year,
-			s.bpm,
-			s.energy,
-			s.danceability,
-			s.loudness,
-			s.liveness,
-			s.valence,
-			s.duration,
-			s.acousticness,
-			s.speechiness,
-			s.popularity,
+			s.song_id, s.title, s.year, s.bpm, s.energy, s.danceability,
+			s.loudness, s.liveness, s.valence, s.duration,
+			s.acousticness, s.speechiness, s.popularity,
 			a.artist_id AS artist_id,
 			a.artist_name AS artist_name,
 			g.genre_id AS genre_id,
@@ -165,7 +154,7 @@ app.get("/api/songs", (req, res) => {
 		ORDER BY s.title;
 	`;
 	db.all(sql, [], (err, rows) => {
-		if(err) {
+		if (err) {
 			return res.status(500).json({error: err.message});
 		}
 	
@@ -201,17 +190,17 @@ app.get("/api/songs/sort/:order", (req, res) => {
 	const order = req.params.order;
 
 	let sortBy;
-	if(order === "id") {
+	if (order === "id") {
 		sortBy = "s.song_id";
-	} else if(order === "title") {
+	} else if (order === "title") {
 		sortBy = "s.title";
-	} else if(order === "year") {
+	} else if (order === "year") {
 		sortBy = "s.year";
-	} else if(order === "duration") {
+	} else if (order === "duration") {
 		sortBy = "s.duration";
-	} else if(order === "artist") {
+	} else if (order === "artist") {
 		sortBy = "a.artist_name";
-	} else if(order === "genre") {
+	} else if (order === "genre") {
 		sortBy = "g.genre_name";
 	} else {
 		return res.status(404).json({error: "Sorted order not found"});
@@ -219,19 +208,9 @@ app.get("/api/songs/sort/:order", (req, res) => {
 
 	const sql = `
 		SELECT
-			s.song_id, 
-			s.title, 
-			s.year, 
-			s.bpm, 
-			s.energy, 
-			s.danceability, 
-			s.loudness,
-      			s.liveness, 
-			s.valence, 
-			s.duration, 
-			s.acousticness, 
-			s.speechiness, 
-			s.popularity,
+			s.song_id, s.title, s.year, s.bpm, s.energy, s.danceability, 
+			s.loudness, s.liveness, s.valence, s.duration, 
+			s.acousticness, s.speechiness, s.popularity,
       			a.artist_id AS art_id, 
 			a.artist_name AS art_name,
       			g.genre_id AS gen_id, 
@@ -242,7 +221,7 @@ app.get("/api/songs/sort/:order", (req, res) => {
 		ORDER BY ${sortBy};
 	`;
 	db.all(sql, [], (err, rows) => {
-		if(err) {
+		if (err) {
 			return res.status(500).json({error: err.message});
 		}
 
@@ -267,8 +246,206 @@ app.get("/api/songs/sort/:order", (req, res) => {
 	});
 });
 
+/* ----- query #7 - returns the specified song ----- */
+app.get("/api/songs/:ref", (req, res) => {
+	const ref = Number(req.params.ref);
 
+  	if (!Number.isInteger(ref)) {
+    		return res.status(404).json({ error: "Song not found" });
+  	}
 
+  	const sql = `
+    		SELECT
+      			s.song_id, s.title, s.year, s.bpm, s.energy, s.danceability,
+			s.loudness,s.liveness, s.valence, s.duration, 
+			s.acousticness, s.speechiness, s.popularity,
+      			a.artist_id AS art_id, a.artist_name AS art_name,
+      			g.genre_id AS gen_id, g.genre_name AS gen_name
+    		FROM songs s
+		INNER JOIN artists a ON s.artist_id = a.artist_id
+    		INNER JOIN genres g ON s.genre_id = g.genre_id
+    		WHERE s.song_id = ?;
+  	`;
+
+  	db.get(sql, [ref], (err, row) => {
+    		if (err) {
+      			return res.status(500).json({ error: err.message });
+    		}
+
+    		if (!row) {
+      			return res.status(404).json({ error: "Song not found" });
+    		}
+
+    		const result = {
+      			song_id: row.song_id,
+      			title: row.title,
+      			year: row.year,
+      			bpm: row.bpm,
+     			energy: row.energy,
+      			danceability: row.danceability,
+      			loudness: row.loudness,
+      			liveness: row.liveness,
+      			valence: row.valence,
+      			duration: row.duration,
+      			acousticness: row.acousticness,
+      			speechiness: row.speechiness,
+      			popularity: row.popularity,
+      			artist: { artist_id: row.art_id, artist_name: row.art_name },
+      			genre: { genre_id: row.gen_id, genre_name: row.gen_name }
+    		};
+		res.json(result);
+  	});
+});
+
+/* ----- query #8 - returns the songs whose title begins with the provided substring ----- */
+app.get("/api/songs/search/begin/:substring", (req, res) => {
+  	const substring = req.params.substring;
+
+  	const sql = `
+    		SELECT
+      			s.song_id, s.title, s.year, s.bpm, s.energy, s.danceability, 
+			s.loudness, s.liveness, s.valence, s.duration, 
+			s.acousticness, s.speechiness, s.popularity,
+      			a.artist_id AS art_id, a.artist_name AS art_name,
+      			g.genre_id AS gen_id, g.genre_name AS gen_name
+    		FROM songs s
+    		INNER JOIN artists a ON s.artist_id = a.artist_id
+    		INNER JOIN genres g ON s.genre_id = g.genre_id
+    		WHERE LOWER(s.title) LIKE ?
+    		ORDER BY s.title;
+  	`;
+
+  	const searchValue = substring.toLowerCase() + "%";
+
+  	db.all(sql, [searchValue], (err, rows) => {
+    		if (err) {
+      			return res.status(500).json({ error: err.message });
+    		}
+
+    		if (rows.length === 0) {
+      			return res.status(404).json({ error: "No songs found" });
+    		}
+
+    		const results = rows.map(r => ({
+      			song_id: r.song_id,
+      			title: r.title,
+      			year: r.year,
+      			bpm: r.bpm,
+      			energy: r.energy,
+      			danceability: r.danceability,
+      			loudness: r.loudness,
+      			liveness: r.liveness,
+      			valence: r.valence,
+      			duration: r.duration,
+      			acousticness: r.acousticness,
+      			speechiness: r.speechiness,
+      			popularity: r.popularity,
+      			artist: { artist_id: r.art_id, artist_name: r.art_name },
+      			genre: { genre_id: r.gen_id, genre_name: r.gen_name }
+    		}));
+		res.json(results);
+  	});
+});
+
+/* ----- query #9 - returns the songs whose title contains the provided substring ----- */
+app.get("/api/songs/search/any/:substring", (req, res) => {
+  	const substring = req.params.substring;
+
+  	const sql = `
+    		SELECT
+      			s.song_id, s.title, s.year, s.bpm, s.energy, s.danceability, 
+			s.loudness, s.liveness, s.valence, s.duration, 
+			s.acousticness, s.speechiness, s.popularity,
+     			a.artist_id AS art_id, a.artist_name AS art_name,
+      			g.genre_id AS gen_id, g.genre_name AS gen_name
+    		FROM songs s
+    		INNER JOIN artists a ON s.artist_id = a.artist_id
+    		INNER JOIN genres g ON s.genre_id = g.genre_id
+    		WHERE LOWER(s.title) LIKE ?
+    		ORDER BY s.title;
+  	`;
+
+  	const searchValue = "%" + substring.toLowerCase() + "%";
+
+  	db.all(sql, [searchValue], (err, rows) => {
+    		if (err) {
+      			return res.status(500).json({ error: err.message });
+    		}
+
+    		if (rows.length === 0) {
+      			return res.status(404).json({ error: "No songs found" });
+    		}
+
+    		const results = rows.map(r => ({
+     			song_id: r.song_id,
+      			title: r.title,
+      			year: r.year,
+      			bpm: r.bpm,
+      			energy: r.energy,
+      			danceability: r.danceability,
+      			loudness: r.loudness,
+      			liveness: r.liveness,
+      			valence: r.valence,
+      			duration: r.duration,
+      			acousticness: r.acousticness,
+      			speechiness: r.speechiness,
+      			popularity: r.popularity,
+      			artist: { artist_id: r.art_id, artist_name: r.art_name },
+     			genre: { genre_id: r.gen_id, genre_name: r.gen_name }
+    		}));
+		res.json(results);
+  	});
+});
+
+/* ----- query #10 - returns the songs whose year is equal to the provided substring ----- */
+app.get("/api/songs/search/year/:substring", (req, res) => {
+ 	const year = Number(req.params.substring);
+
+  	if (!Number.isInteger(year)) {
+  	  	return res.status(404).json({ error: "No songs found" });
+  	}
+
+  	const sql = `
+    		SELECT
+      			s.song_id, s.title, s.year, s.bpm, s.energy, s.danceability, 
+			s.loudness,s.liveness, s.valence, s.duration, 
+			s.acousticness, s.speechiness, s.popularity,
+      			a.artist_id AS art_id, a.artist_name AS art_name,
+      			g.genre_id AS gen_id, g.genre_name AS gen_name
+    		FROM songs s
+    		INNER JOIN artists a ON s.artist_id = a.artist_id
+    		INNER JOIN genres g ON s.genre_id = g.genre_id
+    		WHERE s.year = ?
+    		ORDER BY s.title;
+  	`;
+
+  	db.all(sql, [year], (err, rows) => {
+    		if (err) return res.status(500).json({ error: err.message });
+
+    		if (rows.length === 0) {
+      			return res.status(404).json({ error: "No songs found" });
+    		}
+
+    		const results = rows.map(r => ({
+      			song_id: r.song_id,
+    			title: r.title,
+			year: r.year,
+      			bpm: r.bpm,
+      			energy: r.energy,
+     			danceability: r.danceability,
+      			loudness: r.loudness,
+      			liveness: r.liveness,
+      			valence: r.valence,
+      			duration: r.duration,
+      			acousticness: r.acousticness,
+      			speechiness: r.speechiness,
+      			popularity: r.popularity,
+      			artist: { artist_id: r.art_id, artist_name: r.art_name },
+      			genre: { genre_id: r.gen_id, genre_name: r.gen_name }
+    		}));
+		res.json(results);
+  	});
+});
 
 app.listen(PORT, () => {
 	console.log("Server running on port", PORT);
