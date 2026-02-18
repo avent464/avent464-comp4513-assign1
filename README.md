@@ -6,29 +6,28 @@ This project is an API for querying song data - artist, playlists, songs, averag
 **Express** - Routing<br>
 **Render** - Deployment -> https://avent464-comp4513-assign1.onrender.com
 
-## Endpoints
-| API Endpoint | Description |
+## API Endpoints
+| Endpoint | Description |
 |---|---|
-| `/api/artists` | Returns all artists sorted by `artist_name`. |
-| `/api/artists/:ref` | Returns a single artist by id (`ref`). |
-| `/api/artists/averages/:ref` | Returns the average audio feature values for all songs by the given artist id (`ref`). |
-| `/api/genres` | Returns all genres sorted by `genre_name`. |
-| `/api/songs` | Returns all songs (includes nested artist + genre info). |
-| `/api/songs/sort/:order` | Returns all songs sorted by `order` (`artist`, `year`, or `duration`). |
-| `/api/songs/:ref` | Returns a single song by song id (`ref`). |
-| `/api/songs/search/begin/:substring` | Returns songs whose titles begin with `substring`. |
-| `/api/songs/search/begin/:substring/:order` | Returns songs whose titles begin with `substring`, with sorting controlled by `order`. |
-| `/api/songs/search/any/:substring` | Returns songs whose titles contain `substring` anywhere. |
-| `/api/songs/search/year/:year` | Returns songs where `year` matches exactly. |
-| `/api/songs/artist/:ref` | Returns songs for the given artist id (`ref`). |
-| `/api/songs/genre/:ref` | Returns songs for the given genre id (`ref`). |
+| `/api/artists` | Returns all artists sorted by artist name. |
+| `/api/artists/:ref` | Returns a single artist by id. |
+| `/api/artists/averages/:ref` | Returns the average audio values for all songs by the specified artist. |
+| `/api/genres` | Returns all genres. |
+| `/api/songs` | Returns all data for all songs. |
+| `/api/songs/sort/:order` | Returns all the songs sorted by order field. |
+| `/api/songs/:ref` | Returns just the specified song. |
+| `/api/songs/search/begin/:substring` | Returns the songs whose title begins with the provided substring. |
+| `/api/songs/search/any/:substring` | Returns songs whose titles contain the given substring anywhere. |
+| `/api/songs/search/year/:year` | Returns songs where year is equal to given substring. |
+| `/api/songs/artist/:ref` | Returns songs for the specified artist id (`ref`). |
+| `/api/songs/genre/:ref` | Returns songs for the specified genre id. |
 | `/api/playlists` | Returns all playlist ids. |
-| `/api/playlists/:ref` | Returns songs for playlist id (`ref`). |
-| `/api/mood/dancing/:ref` | Returns top `ref` songs sorted by danceability (desc). |
-| `/api/mood/happy/:ref` | Returns top `ref` songs sorted by valence (desc). |
-| `/api/mood/happy` | Missing ref test route (returns JSON error). |
-| `/api/mood/coffee/:ref` | Returns top `ref` songs sorted by (liveness / acousticness) (desc). |
-| `/api/mood/studying/:ref` | Returns top `ref` songs sorted by (energy × speechiness) (asc). |
+| `/api/playlists/:ref` | Returns songs for playlist id. |
+| `/api/mood/dancing/:ref` | Returns top songs sorted by danceability (desc). |
+| `/api/mood/happy/:ref` | Returns top songs sorted by valence (desc). |
+| `/api/mood/happy` | Missing ref test route. |
+| `/api/mood/coffee/:ref` | Returns top songs sorted by (liveness / acousticness) (desc). |
+| `/api/mood/studying/:ref` | Returns top songs sorted by (energy × speechiness) (asc). |
 
 ## Example API Requests
 
