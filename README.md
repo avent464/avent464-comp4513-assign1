@@ -19,13 +19,13 @@ This project is an API for querying song data - artist, playlists, songs, averag
 | `/api/songs/search/begin/:substring` | Returns the songs whose title begins with the provided substring. |
 | `/api/songs/search/any/:substring` | Returns songs whose titles contain the given substring anywhere. |
 | `/api/songs/search/year/:year` | Returns songs where year is equal to given substring. |
-| `/api/songs/artist/:ref` | Returns songs for the specified artist id (`ref`). |
-| `/api/songs/genre/:ref` | Returns songs for the specified genre id. |
+| `/api/songs/artist/:ref` | Returns songs for the specified artist. |
+| `/api/songs/genre/:ref` | Returns songs for the specified genre. |
 | `/api/playlists` | Returns all playlist ids. |
 | `/api/playlists/:ref` | Returns songs for playlist id. |
 | `/api/mood/dancing/:ref` | Returns top songs sorted by danceability (desc). |
 | `/api/mood/happy/:ref` | Returns top songs sorted by valence (desc). |
-| `/api/mood/happy` | Missing ref test route. |
+| `/api/mood/happy` | Returns the top number of songs sorted by valence parameter. |
 | `/api/mood/coffee/:ref` | Returns top songs sorted by (liveness / acousticness) (desc). |
 | `/api/mood/studying/:ref` | Returns top songs sorted by (energy × speechiness) (asc). |
 
