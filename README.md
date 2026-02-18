@@ -1,0 +1,31 @@
+# Example API Requests
+
+- https://avent464-comp4513-assign1.onrender.com/api/artists
+- https://avent464-comp4513-assign1.onrender.com/api/artists/101
+- https://avent464-comp4513-assign1.onrender.com/api/artists/xyz
+- https://avent464-comp4513-assign1.onrender.com/api/artists/averages/110
+- https://avent464-comp4513-assign1.onrender.com/api/genres
+- https://avent464-comp4513-assign1.onrender.com/api/songs
+- https://avent464-comp4513-assign1.onrender.com/api/songs/sort/artist
+- https://avent464-comp4513-assign1.onrender.com/api/songs/sort/year
+- https://avent464-comp4513-assign1.onrender.com/api/songs/sort/duration
+- https://avent464-comp4513-assign1.onrender.com/api/songs/101
+- https://avent464-comp4513-assign1.onrender.com/api/songs/xyz
+- https://avent464-comp4513-assign1.onrender.com/api/songs/search/begin/love
+- https://avent464-comp4513-assign1.onrender.com/api/songs/search/begin/sdjfhs
+- https://avent464-comp4513-assign1.onrender.com/api/songs/search/any/love
+- https://avent464-comp4513-assign1.onrender.com/api/songs/search/year/2020
+- https://avent464-comp4513-assign1.onrender.com/api/songs/search/year/2030
+- https://avent464-comp4513-assign1.onrender.com/api/songs/artist/111
+- https://avent464-comp4513-assign1.onrender.com/api/songs/artist/00000
+- https://avent464-comp4513-assign1.onrender.com/api/songs/genre/121
+- https://avent464-comp4513-assign1.onrender.com/api/playlists
+- https://avent464-comp4513-assign1.onrender.com/api/playlists/5
+- https://avent464-comp4513-assign1.onrender.com/api/playlists/00000
+- https://avent464-comp4513-assign1.onrender.com/api/mood/dancing/3
+- https://avent464-comp4513-assign1.onrender.com/api/mood/dancing/10
+- https://avent464-comp4513-assign1.onrender.com/api/mood/dancing/abcde
+- https://avent464-comp4513-assign1.onrender.com/api/mood/happy/8
+- https://avent464-comp4513-assign1.onrender.com/api/mood/happy
+- https://avent464-comp4513-assign1.onrender.com/api/mood/coffee/5
+- https://avent464-comp4513-assign1.onrender.com/api/mood/studying/7
