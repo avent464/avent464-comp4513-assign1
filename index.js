@@ -18,21 +18,25 @@ const db = new sqlite3.Database(dbPath, (err) => {
 	}
 });
 
-app.get ("/", (req, res) => {
-	res.json({ status: "good" });
-});
-
-/* testing the route */
-app.get("/api/tables", (req, res) => {
-	const sql = "SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name;";
-	db.all(sql, [], (err, rows) => {
-		if (err) {
-			return res.status(500).json({error: err.message});
-		} else {
-			res.json(rows);
-		}
-	});
-});
+function mapRow(r) {
+  return {
+    song_id: r.song_id,
+    title: r.title,
+    year: r.year,
+    bpm: r.bpm,
+    energy: r.energy,
+    danceability: r.danceability,
+    loudness: r.loudness,
+    liveness: r.liveness,
+    valence: r.valence,
+    duration: r.duration,
+    acousticness: r.acousticness,
+    speechiness: r.speechiness,
+    popularity: r.popularity,
+    artist: { artist_id: r.artist_id, artist_name: r.artist_name },
+    genre: { genre_id: r.genre_id, genre_name: r.genre_name }
+  };
+}
 
 /* ----- query #1 - returns data for artists sorted by artist_name ----- */
 app.get("/api/artists", (req, res) => {
@@ -47,8 +51,8 @@ app.get("/api/artists", (req, res) => {
 		FROM artists a
 		INNER JOIN types t ON a.artist_type_id = t.type_id
 		ORDER BY a.artist_name;
-
 	`;
+
 	db.all(sql, [], (err, rows) => {
 		if (err) {
 			return res.status(500).json({error: err.message});
@@ -62,7 +66,7 @@ app.get("/api/artists/averages/:ref", (req, res) => {
 	const ref = Number(req.params.ref);
 	
 	if (!Number.isInteger(ref)) {
-		return res.status(404).json({error: "Artist averages not fount"});
+		return res.status(404).json({error: "Artist averages not found"});
 	}
 	
 	const sql = `
@@ -71,15 +75,16 @@ app.get("/api/artists/averages/:ref", (req, res) => {
 			AVG(energy) AS energy,
 			AVG(danceability) AS danceability,
 			AVG(loudness) AS loudness,
-                        AVG(liveness) AS liveness,
-                        AVG(valence) AS valence,
-			AVG(bpm) AS duration,
-                        AVG(acousticness) AS acousticness,
-                        AVG(speechiness) AS speechiness,
+            AVG(liveness) AS liveness,
+            AVG(valence) AS valence,
+			AVG(duration) AS duration,
+            AVG(acousticness) AS acousticness,
+            AVG(speechiness) AS speechiness,
 			AVG(popularity) AS popularity
 		FROM songs
 		WHERE artist_id = ?;
 	`;
+
 	db.get(sql, [ref], (err, row) => {
 		if (err) {
 			return res.status(500).json({error: err.message});
@@ -112,9 +117,13 @@ app.get("/api/artists/:ref", (req, res) => {
 		INNER JOIN types t ON a.artist_type_id = t.type_id
 		WHERE a.artist_id = ?;
 	`;
+
 	db.get(sql, [ref], (err, row) => {
 		if (err) {
 			return res.status(500).json({error: err.message});
+		}
+		if (!row) {
+  			return res.status(404).json({ error: "Artist not found" });
 		}
 		res.json(row);
 	});
@@ -129,6 +138,7 @@ app.get("/api/genres", (req, res) => {
 		FROM genres
 		ORDER BY genre_name;
 	`;
+
 	db.all(sql, [], (err, rows) => {
 		if (err) {
 			return res.status(500).json({error: err.message});
@@ -153,34 +163,13 @@ app.get("/api/songs", (req, res) => {
 		INNER JOIN genres g ON s.genre_id = g.genre_id
 		ORDER BY s.title;
 	`;
+
 	db.all(sql, [], (err, rows) => {
 		if (err) {
 			return res.status(500).json({error: err.message});
 		}
 	
-		const result = rows.map(r => ({
-			song_id: r.song_id,
-			title: r.title,
-			year: r.year,
-			bpm: r.bpm,
-			energy: r.energy,
-			danceability: r.danceability,
-			loudness: r.loudness,
-			liveness: r.liveness,
-			valence: r.valence,
-			duration: r.duration,
-			acousticness: r.acousticness,
-			speechiness: r.speechiness,
-			popularity: r.popularity,
-			artist: {
-				artist_id: r.artist_id,
-				artist_name: r.artist_name
-			},
-                      	genre: {
-                                genre_id: r.genre_id,
-                                genre_name: r.genre_name
-                        }
-		}));
+		const result = rows.map(mapRow);
 		res.json(result);
 	});
 });
@@ -211,90 +200,22 @@ app.get("/api/songs/sort/:order", (req, res) => {
 			s.song_id, s.title, s.year, s.bpm, s.energy, s.danceability, 
 			s.loudness, s.liveness, s.valence, s.duration, 
 			s.acousticness, s.speechiness, s.popularity,
-      			a.artist_id AS art_id, 
-			a.artist_name AS art_name,
-      			g.genre_id AS gen_id, 
-			g.genre_name AS gen_name
+      		a.artist_id AS artist_id, a.artist_name AS artist_name,
+			g.genre_id AS genre_id, g.genre_name AS genre_name
 		FROM songs s
 		INNER JOIN artists a ON s.artist_id = a.artist_id
 		INNER JOIN genres g ON s.genre_id = g.genre_id
 		ORDER BY ${sortBy};
 	`;
+
 	db.all(sql, [], (err, rows) => {
 		if (err) {
 			return res.status(500).json({error: err.message});
 		}
 
-		const result = rows.map(r => ({
-      			song_id: r.song_id,
-      			title: r.title,
-      			year: r.year,
-      			bpm: r.bpm,
-      			energy: r.energy,
-      			danceability: r.danceability,
-      			loudness: r.loudness,
-      			liveness: r.liveness,
-      			valence: r.valence,
-      			duration: r.duration,
-      			acousticness: r.acousticness,
-     			speechiness: r.speechiness,
-      			popularity: r.popularity,
-      			artist: { artist_id: r.art_id, artist_name: r.art_name },
-      			genre: { genre_id: r.gen_id, genre_name: r.gen_name }
-    		}));
+		const result = rows.map(mapRow);
 		res.json(result);
 	});
-});
-
-/* ----- query #7 - returns the specified song ----- */
-app.get("/api/songs/:ref", (req, res) => {
-	const ref = Number(req.params.ref);
-
-  	if (!Number.isInteger(ref)) {
-    		return res.status(404).json({ error: "Song not found" });
-  	}
-
-  	const sql = `
-    		SELECT
-      			s.song_id, s.title, s.year, s.bpm, s.energy, s.danceability,
-			s.loudness,s.liveness, s.valence, s.duration, 
-			s.acousticness, s.speechiness, s.popularity,
-      			a.artist_id AS art_id, a.artist_name AS art_name,
-      			g.genre_id AS gen_id, g.genre_name AS gen_name
-    		FROM songs s
-		INNER JOIN artists a ON s.artist_id = a.artist_id
-    		INNER JOIN genres g ON s.genre_id = g.genre_id
-    		WHERE s.song_id = ?;
-  	`;
-
-  	db.get(sql, [ref], (err, row) => {
-    		if (err) {
-      			return res.status(500).json({ error: err.message });
-    		}
-
-    		if (!row) {
-      			return res.status(404).json({ error: "Song not found" });
-    		}
-
-    		const result = {
-      			song_id: row.song_id,
-      			title: row.title,
-      			year: row.year,
-      			bpm: row.bpm,
-     			energy: row.energy,
-      			danceability: row.danceability,
-      			loudness: row.loudness,
-      			liveness: row.liveness,
-      			valence: row.valence,
-      			duration: row.duration,
-      			acousticness: row.acousticness,
-      			speechiness: row.speechiness,
-      			popularity: row.popularity,
-      			artist: { artist_id: row.art_id, artist_name: row.art_name },
-      			genre: { genre_id: row.gen_id, genre_name: row.gen_name }
-    		};
-		res.json(result);
-  	});
 });
 
 /* ----- query #8 - returns the songs whose title begins with the provided substring ----- */
@@ -303,11 +224,11 @@ app.get("/api/songs/search/begin/:substring", (req, res) => {
 
   	const sql = `
     		SELECT
-      			s.song_id, s.title, s.year, s.bpm, s.energy, s.danceability, 
+      		s.song_id, s.title, s.year, s.bpm, s.energy, s.danceability, 
 			s.loudness, s.liveness, s.valence, s.duration, 
 			s.acousticness, s.speechiness, s.popularity,
-      			a.artist_id AS art_id, a.artist_name AS art_name,
-      			g.genre_id AS gen_id, g.genre_name AS gen_name
+      		a.artist_id AS artist_id, a.artist_name AS artist_name,
+      		g.genre_id AS genre_id, g.genre_name AS genre_name
     		FROM songs s
     		INNER JOIN artists a ON s.artist_id = a.artist_id
     		INNER JOIN genres g ON s.genre_id = g.genre_id
@@ -318,33 +239,17 @@ app.get("/api/songs/search/begin/:substring", (req, res) => {
   	const searchValue = substring.toLowerCase() + "%";
 
   	db.all(sql, [searchValue], (err, rows) => {
-    		if (err) {
-      			return res.status(500).json({ error: err.message });
-    		}
+		if (err) {
+			return res.status(500).json({ error: err.message });
+		}
 
-    		if (rows.length === 0) {
-      			return res.status(404).json({ error: "No songs found" });
-    		}
+		if (rows.length === 0) {
+			return res.status(404).json({ error: "No songs found" });
+		}
 
-    		const result = rows.map(r => ({
-      			song_id: r.song_id,
-      			title: r.title,
-      			year: r.year,
-      			bpm: r.bpm,
-      			energy: r.energy,
-      			danceability: r.danceability,
-      			loudness: r.loudness,
-      			liveness: r.liveness,
-      			valence: r.valence,
-      			duration: r.duration,
-      			acousticness: r.acousticness,
-      			speechiness: r.speechiness,
-      			popularity: r.popularity,
-      			artist: { artist_id: r.art_id, artist_name: r.art_name },
-      			genre: { genre_id: r.gen_id, genre_name: r.gen_name }
-    		}));
+		const result = rows.map(mapRow);
 		res.json(result);
-  	});
+	});
 });
 
 /* ----- query #9 - returns the songs whose title contains the provided substring ----- */
@@ -356,8 +261,8 @@ app.get("/api/songs/search/any/:substring", (req, res) => {
       			s.song_id, s.title, s.year, s.bpm, s.energy, s.danceability, 
 			s.loudness, s.liveness, s.valence, s.duration, 
 			s.acousticness, s.speechiness, s.popularity,
-     			a.artist_id AS art_id, a.artist_name AS art_name,
-      			g.genre_id AS gen_id, g.genre_name AS gen_name
+     			a.artist_id AS artist_id, a.artist_name AS artist_name,
+      			g.genre_id AS genre_id, g.genre_name AS genre_name
     		FROM songs s
     		INNER JOIN artists a ON s.artist_id = a.artist_id
     		INNER JOIN genres g ON s.genre_id = g.genre_id
@@ -368,33 +273,17 @@ app.get("/api/songs/search/any/:substring", (req, res) => {
   	const searchValue = "%" + substring.toLowerCase() + "%";
 
   	db.all(sql, [searchValue], (err, rows) => {
-    		if (err) {
-      			return res.status(500).json({ error: err.message });
-    		}
+		if (err) {
+			return res.status(500).json({ error: err.message });
+		}
 
-    		if (rows.length === 0) {
-      			return res.status(404).json({ error: "No songs found" });
-    		}
+		if (rows.length === 0) {
+			return res.status(404).json({ error: "No songs found" });
+		}
 
-    		const result = rows.map(r => ({
-     			song_id: r.song_id,
-      			title: r.title,
-      			year: r.year,
-      			bpm: r.bpm,
-      			energy: r.energy,
-      			danceability: r.danceability,
-      			loudness: r.loudness,
-      			liveness: r.liveness,
-      			valence: r.valence,
-      			duration: r.duration,
-      			acousticness: r.acousticness,
-      			speechiness: r.speechiness,
-      			popularity: r.popularity,
-      			artist: { artist_id: r.art_id, artist_name: r.art_name },
-     			genre: { genre_id: r.gen_id, genre_name: r.gen_name }
-    		}));
+		const result = rows.map(mapRow);
 		res.json(result);
-  	});
+	});
 });
 
 /* ----- query #10 - returns the songs whose year is equal to the provided substring ----- */
@@ -408,10 +297,10 @@ app.get("/api/songs/search/year/:substring", (req, res) => {
   	const sql = `
     		SELECT
       			s.song_id, s.title, s.year, s.bpm, s.energy, s.danceability, 
-			s.loudness,s.liveness, s.valence, s.duration, 
-			s.acousticness, s.speechiness, s.popularity,
-      			a.artist_id AS art_id, a.artist_name AS art_name,
-      			g.genre_id AS gen_id, g.genre_name AS gen_name
+				s.loudness,s.liveness, s.valence, s.duration, 
+				s.acousticness, s.speechiness, s.popularity,
+      			a.artist_id AS artist_id, a.artist_name AS artist_name,
+      			g.genre_id AS genre_id, g.genre_name AS genre_name
     		FROM songs s
     		INNER JOIN artists a ON s.artist_id = a.artist_id
     		INNER JOIN genres g ON s.genre_id = g.genre_id
@@ -420,33 +309,17 @@ app.get("/api/songs/search/year/:substring", (req, res) => {
   	`;
 
   	db.all(sql, [year], (err, rows) => {
-    		if (err) {
+    	if (err) {
 			return res.status(500).json({ error: err.message });
 		}
 
-    		if (rows.length === 0) {
-      			return res.status(404).json({ error: "No songs found" });
-    		}
+    	if (rows.length === 0) {
+    		return res.status(404).json({ error: "No songs found" });
+    	}
 
-    		const result = rows.map(r => ({
-      			song_id: r.song_id,
-    			title: r.title,
-			year: r.year,
-      			bpm: r.bpm,
-      			energy: r.energy,
-     			danceability: r.danceability,
-      			loudness: r.loudness,
-      			liveness: r.liveness,
-      			valence: r.valence,
-      			duration: r.duration,
-      			acousticness: r.acousticness,
-      			speechiness: r.speechiness,
-      			popularity: r.popularity,
-      			artist: { artist_id: r.art_id, artist_name: r.art_name },
-      			genre: { genre_id: r.gen_id, genre_name: r.gen_name }
-    		}));
+		const result = rows.map(mapRow);
 		res.json(result);
-  	});
+	});
 });
 
 /* ----- query #11 - returns all the songs for the specified artist ----- */
@@ -460,10 +333,10 @@ app.get("/api/songs/artist/:ref", (req, res) => {
   	const sql = `
     		SELECT
       			s.song_id, s.title, s.year, s.bpm, s.energy, s.danceability, 
-			s.loudness, s.liveness, s.valence, s.duration, 
-			s.acousticness, s.speechiness, s.popularity,
-      			a.artist_id AS art_id, a.artist_name AS art_name,
-      			g.genre_id AS gen_id, g.genre_name AS gen_name
+				s.loudness, s.liveness, s.valence, s.duration, 
+				s.acousticness, s.speechiness, s.popularity,
+      			a.artist_id AS artist_id, a.artist_name AS artist_name,
+      			g.genre_id AS genre_id, g.genre_name AS genre_name
     		FROM songs s
     		INNER JOIN artists a ON s.artist_id = a.artist_id
     		INNER JOIN genres g ON s.genre_id = g.genre_id
@@ -472,31 +345,15 @@ app.get("/api/songs/artist/:ref", (req, res) => {
   	`;
 
   	db.all(sql, [ref], (err, rows) => {
-    		if (err) {
+    	if (err) {
 			return res.status(500).json({ error: err.message });
 		}
 
-    		if (rows.length === 0) {
+    	if (rows.length === 0) {
       			return res.status(404).json({ error: "No songs found" });
     		}
 
-    		const result = rows.map(r => ({
-      			song_id: r.song_id,
-      			title: r.title,
-      			year: r.year,
-      			bpm: r.bpm,
-      			energy: r.energy,
-      			danceability: r.danceability,
-      			loudness: r.loudness,
-      			liveness: r.liveness,
-      			valence: r.valence,
-      			duration: r.duration,
-      			acousticness: r.acousticness,
-      			speechiness: r.speechiness,
-      			popularity: r.popularity,
-      			artist: { artist_id: r.art_id, artist_name: r.art_name },
-      			genre: { genre_id: r.gen_id, genre_name: r.gen_name }
-    		}));
+		const result = rows.map(mapRow);
 		res.json(result);
   	});
 });
@@ -512,10 +369,10 @@ app.get("/api/songs/genre/:ref", (req, res) => {
   	const sql = `
     		SELECT
       			s.song_id, s.title, s.year, s.bpm, s.energy, s.danceability, 
-			s.loudness, s.liveness, s.valence, s.duration, 
-			s.acousticness, s.speechiness, s.popularity,
-      			a.artist_id AS art_id, a.artist_name AS art_name,
-      			g.genre_id AS gen_id, g.genre_name AS gen_name
+				s.loudness, s.liveness, s.valence, s.duration, 
+				s.acousticness, s.speechiness, s.popularity,
+      			a.artist_id AS artist_id, a.artist_name AS artist_name,
+      			g.genre_id AS genre_id, g.genre_name AS genre_name
     		FROM songs s
     		INNER JOIN artists a ON s.artist_id = a.artist_id
     		INNER JOIN genres g ON s.genre_id = g.genre_id
@@ -524,32 +381,51 @@ app.get("/api/songs/genre/:ref", (req, res) => {
   	`;
 
   	db.all(sql, [ref], (err, rows) => {
-    		if (err) {
+    	if (err) {
 			return res.status(500).json({ error: err.message });
 		}
 
-    		if (rows.length === 0) {
-      			return res.status(404).json({ error: "No songs found" });
-    		}
+		if (rows.length === 0) {
+			return res.status(404).json({ error: "No songs found" });
+		}
 
-    		const results = rows.map(r => ({
-      			song_id: r.song_id,
-			title: r.title,
-      			year: r.year,
-      			bpm: r.bpm,
-      			energy: r.energy,
-      			danceability: r.danceability,
-      			loudness: r.loudness,
-      			liveness: r.liveness,
-      			valence: r.valence,
-      			duration: r.duration,
-      			acousticness: r.acousticness,
-      			speechiness: r.speechiness,
-      			popularity: r.popularity,
-      			artist: { artist_id: r.art_id, artist_name: r.art_name },
-      			genre: { genre_id: r.gen_id, genre_name: r.gen_name }
-    		}));
-	    	res.json(results);
+		const result = rows.map(mapRow);
+		res.json(result);
+	});
+});
+
+/* ----- query #7 - returns the specified song ----- */
+app.get("/api/songs/:ref", (req, res) => {
+	const ref = Number(req.params.ref);
+
+  	if (!Number.isInteger(ref)) {
+    	return res.status(404).json({ error: "Song not found" });
+  	}
+
+  	const sql = `
+    	SELECT
+			s.song_id, s.title, s.year, s.bpm, s.energy, s.danceability,
+			s.loudness,s.liveness, s.valence, s.duration, 
+			s.acousticness, s.speechiness, s.popularity,
+  			a.artist_id AS artist_id, a.artist_name AS artist_name,
+    		g.genre_id AS genre_id, g.genre_name AS genre_name
+    	FROM songs s
+		INNER JOIN artists a ON s.artist_id = a.artist_id
+    	INNER JOIN genres g ON s.genre_id = g.genre_id
+    	WHERE s.song_id = ?;
+  	`;
+
+  	db.get(sql, [ref], (err, row) => {
+		if (err) {
+			return res.status(500).json({ error: err.message });
+		}
+
+		if (!row) {
+			return res.status(404).json({ error: "Song not found" });
+		}
+
+		const result = mapRow(row);
+		res.json(result);
   	});
 });
 
@@ -562,9 +438,9 @@ app.get("/api/playlists", (req, res) => {
   	`;
 
   	db.all(sql, [], (err, rows) => {
-    		if (err) {
+    	if (err) {
 			return res.status(500).json({ error: err.message });
-    		}
+    	}
 		res.json(rows);
   	});
 });
@@ -573,7 +449,7 @@ app.get("/api/playlists/:ref", (req, res) => {
   	const ref = Number(req.params.ref);
 
   	if (!Number.isInteger(ref)) {
-    		return res.status(404).json({ error: "Playlist not found" });
+    	return res.status(404).json({ error: "Playlist not found" });
   	}
 
   	const sql = `
@@ -585,7 +461,7 @@ app.get("/api/playlists/:ref", (req, res) => {
       			g.genre_name,
       			s.year
     		FROM playlists p
-   		INNER JOIN songs s ON p.song_id = s.song_id
+   			INNER JOIN songs s ON p.song_id = s.song_id
     		INNER JOIN artists a ON s.artist_id = a.artist_id
     		INNER JOIN genres g ON s.genre_id = g.genre_id
     		WHERE p.playlist_id = ?
@@ -593,20 +469,21 @@ app.get("/api/playlists/:ref", (req, res) => {
   	`;
 
   	db.all(sql, [ref], (err, rows) => {
-    		if (err) {
+    	if (err) {
 			return res.status(500).json({ error: err.message });
 		}
 
-	    	if (rows.length === 0) {
-      			return res.status(404).json({ error: "Playlist not found" });
-    		}
-    		res.json(rows);
+		if (rows.length === 0) {
+			return res.status(404).json({ error: "Playlist not found" });
+		}
+		res.json(rows);
   	});
 });
 
 /* ----- query #14 - returns top songs sorted by danceability parameter (descending) ----- */
 function getLimit(ref) {
- 	 const n = Number(ref);
+ 	const n = Number(ref);
+
   	if (!Number.isInteger(n) || n < 1) {
 		return 20;
 	} else if (n > 20) {
@@ -618,46 +495,33 @@ function getLimit(ref) {
 
 function moodRoute(orderByParam, direction) {
   	return (req, res) => {
-    		const limit = getLimit(req.params.ref);
+		const limit = getLimit(req.params.ref);
 
-    		const sql = `
-      			SELECT
-        			s.song_id, s.title, s.year, s.bpm, s.energy, s.danceability, 
+		const sql = `
+			SELECT
+				s.song_id, s.title, s.year, s.bpm, s.energy, s.danceability, 
 				s.loudness, s.liveness, s.valence, s.duration, 
 				s.acousticness, s.speechiness, s.popularity,
-        			a.artist_id AS art_id, a.artist_name AS art_name,
-        			g.genre_id AS gen_id, g.genre_name AS gen_name
-      			FROM songs s
-      			INNER JOIN artists a ON s.artist_id = a.artist_id
-      			INNER JOIN genres g ON s.genre_id = g.genre_id
-      			ORDER BY ${orderByParam} ${direction}
-      			LIMIT ?;
-    		`;
+				a.artist_id AS artist_id, a.artist_name AS artist_name,
+				g.genre_id AS genre_id, g.genre_name AS genre_name
+			FROM songs s
+			INNER JOIN artists a ON s.artist_id = a.artist_id
+			INNER JOIN genres g ON s.genre_id = g.genre_id
+			ORDER BY ${orderByParam} ${direction}
+			LIMIT ?;
+		`;
 
-    		db.all(sql, [limit], (err, rows) => {
-      			if (err) {
+		db.all(sql, [limit], (err, rows) => {
+			if (err) {
 				return res.status(500).json({ error: err.message });
 			}
-		
-      			const result = rows.map(r => ({
-        			song_id: r.song_id,
-        			title: r.title,
-        			year: r.year,
-        			bpm: r.bpm,
-        			energy: r.energy,
-        			danceability: r.danceability,
-        			loudness: r.loudness,
-        			liveness: r.liveness,
-        			valence: r.valence,
-        			duration: r.duration,
-        			acousticness: r.acousticness,
-        			speechiness: r.speechiness,
-        			popularity: r.popularity,
-        			artist: { artist_id: r.art_id, artist_name: r.art_name },
-        			genre: { genre_id: r.gen_id, genre_name: r.gen_name }
-      			}));
-      			res.json(result);
-    		});
+			if (rows.length === 0) {
+				return res.status(404).json({ error: "No songs found" });
+			}	
+	
+			const result = rows.map(mapRow);
+			res.json(result);
+		});
   	};
 }
 
@@ -667,10 +531,12 @@ app.get("/api/mood/dancing/:ref", moodRoute("s.danceability", "DESC"));
 
 /* ----- query #15 - happy ----- */
 app.get("/api/mood/happy/:ref", moodRoute("s.valence", "DESC"));
-
+app.get("/api/mood/happy", (req, res) => {
+  return res.status(404).json({ error: "Missing ref parameter" });
+});
 
 /* ----- query #16 - coffee ----- */
-app.get("/api/mood/coffee/:ref", moodRoute("(1.0 * s.livenss / NULLIF(s.acousticness, 0))", "DESC"));
+app.get("/api/mood/coffee/:ref", moodRoute("(1.0 * s.liveness / NULLIF(s.acousticness, 0))", "DESC"));
 
 
 /* ----- query #17 - studying ----- */
@@ -679,4 +545,3 @@ app.get("/api/mood/studying/:ref", moodRoute("(s.energy * s.speechiness)", "ASC"
 app.listen(PORT, () => {
 	console.log("Server running on port", PORT);
 });
-
