@@ -1,10 +1,34 @@
-# Overview
+## Overview
 This project is an API for querying song data - artist, playlists, songs, averages, and moods. All data is returned in JSON format.
 
-# Built with
-Node JS - JavaScript runtime
-Express - Routing
-Render - Deployment - https://avent464-comp4513-assign1.onrender.com
+## Built with
+**Node JS** - JavaScript runtime<br>
+**Express** - Routing<br>
+**Render** - Deployment -> https://avent464-comp4513-assign1.onrender.com
+
+## Endpoints
+| API Endpoint | Description |
+|---|---|
+| `/api/artists` | Returns all artists sorted by `artist_name`. |
+| `/api/artists/:ref` | Returns a single artist by id (`ref`). |
+| `/api/artists/averages/:ref` | Returns the average audio feature values for all songs by the given artist id (`ref`). |
+| `/api/genres` | Returns all genres sorted by `genre_name`. |
+| `/api/songs` | Returns all songs (includes nested artist + genre info). |
+| `/api/songs/sort/:order` | Returns all songs sorted by `order` (`artist`, `year`, or `duration`). |
+| `/api/songs/:ref` | Returns a single song by song id (`ref`). |
+| `/api/songs/search/begin/:substring` | Returns songs whose titles begin with `substring`. |
+| `/api/songs/search/begin/:substring/:order` | Returns songs whose titles begin with `substring`, with sorting controlled by `order`. |
+| `/api/songs/search/any/:substring` | Returns songs whose titles contain `substring` anywhere. |
+| `/api/songs/search/year/:year` | Returns songs where `year` matches exactly. |
+| `/api/songs/artist/:ref` | Returns songs for the given artist id (`ref`). |
+| `/api/songs/genre/:ref` | Returns songs for the given genre id (`ref`). |
+| `/api/playlists` | Returns all playlist ids. |
+| `/api/playlists/:ref` | Returns songs for playlist id (`ref`). |
+| `/api/mood/dancing/:ref` | Returns top `ref` songs sorted by danceability (desc). |
+| `/api/mood/happy/:ref` | Returns top `ref` songs sorted by valence (desc). |
+| `/api/mood/happy` | Missing ref test route (returns JSON error). |
+| `/api/mood/coffee/:ref` | Returns top `ref` songs sorted by (liveness / acousticness) (desc). |
+| `/api/mood/studying/:ref` | Returns top `ref` songs sorted by (energy × speechiness) (asc). |
 
 ## Example API Requests
 
